@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "623956397741",
+    "project_id": "app-literamap",
+    "storage_bucket": "app-literamap.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:623956397741:android:178e6f04194db990c4c024",
+        "android_client_info": {
+          "package_name": "com.example.literamap"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCccaT4Yw1Oih7122Vvir89bPCAEF8qC_M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
