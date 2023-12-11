@@ -1,9 +1,9 @@
-import 'screens/tela_autenticacao.dart';
-import 'screens/tela_home.dart';
+import '../menu.dart';
+import '../telas/tela_autenticacao.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import 'screens/tela_inicial.dart';
+import '../telas/tela_inicial.dart';
 
 createUserWithEmailAndPassword(
     String emailAddress, String password, BuildContext context) async {
@@ -48,8 +48,7 @@ signInWithEmailAndPassword(
 
     User? user = credential.user;
     if (user != null) {
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => const TelaHome()));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => Menu()));
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text("Autenticado com sucesso"),
         backgroundColor: Colors.green,

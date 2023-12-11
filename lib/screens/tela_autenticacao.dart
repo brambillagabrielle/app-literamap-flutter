@@ -1,4 +1,4 @@
-import '../firebase_functions.dart';
+import '../firebase/firebase_functions.dart';
 import 'package:flutter/material.dart';
 
 class TelaAutenticacao extends StatefulWidget {
@@ -30,6 +30,7 @@ class _TelaAutenticacaoState extends State<TelaAutenticacao> {
                     ),
                     TextFormField(
                       controller: senhaController,
+                      obscureText: true,
                       decoration: const InputDecoration(
                         labelText: "Senha",
                         hintText: "********",
