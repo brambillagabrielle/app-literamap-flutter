@@ -1,5 +1,5 @@
-import 'telas/tela_livros.dart';
-import 'telas/tela_mapa.dart';
+import 'screens/tela_livros.dart';
+import 'screens/tela_mapa.dart';
 import 'package:flutter/material.dart';
 
 class Menu extends StatefulWidget {
