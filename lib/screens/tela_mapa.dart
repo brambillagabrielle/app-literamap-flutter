@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:geocoding_resolver/geocoding_resolver.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -345,27 +344,6 @@ class TelaMapaState extends State<TelaMapa> {
         .animateCamera(CameraUpdate.newCameraPosition(_posicaoCamera));
   }
 
-  _getLocalizacaoUsuario() async {
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      await Geolocator.requestPermission();
-      permission = await Geolocator.checkPermission();
-    }
-    if (permission == LocationPermission.deniedForever) {
-      await Geolocator.openLocationSettings();
-      permission = await Geolocator.checkPermission();
-    }
-
-    if (permission == LocationPermission.always ||
-        permission == LocationPermission.whileInUse) {
-      final position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-      _posicaoCamera = CameraPosition(
-          target: LatLng(position.latitude, position.longitude), zoom: 10);
-      _movimentarCamera();
-    }
-  }
-
   Future<User?> _getUser({required BuildContext context}) async {
     User? user;
     if (_currentUser != null) return _currentUser;
@@ -403,6 +381,5 @@ class TelaMapaState extends State<TelaMapa> {
   @override
   void initState() {
     super.initState();
-    _getLocalizacaoUsuario();
   }
 }
