@@ -52,8 +52,6 @@ class TelaMapaState extends State<TelaMapa> {
             User? user = await _getUser(context: context);
             _currentUser = user;
 
-            _getLocalizacaoUsuario();
-
             if (_currentUser != null) {
               _getLivrosRegistrados();
             }
@@ -111,7 +109,7 @@ class TelaMapaState extends State<TelaMapa> {
                     TextFormField(
                         controller: controladorAno,
                         decoration: const InputDecoration(
-                          labelText: 'Ano de publicação',
+                          labelText: 'Ano',
                           icon: Icon(Icons.calendar_today_outlined),
                         ),
                         validator: (value) {
@@ -140,6 +138,13 @@ class TelaMapaState extends State<TelaMapa> {
                         livro['longitude'] = latLng.longitude;
                         _livros.add(livro).then(
                             (documentSnapshot) => id = documentSnapshot.id);
+                      } else {
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(const SnackBar(
+                          content: Text(
+                              "Login é necessário para que o livro seja registrado"),
+                          backgroundColor: Colors.red,
+                        ));
                       }
 
                       Marker marcador = Marker(
@@ -159,11 +164,6 @@ class TelaMapaState extends State<TelaMapa> {
                       setState(() {
                         _marcadores.add(marcador);
                       });
-
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text(
-                              'Você precisa estar logado para poder adicionar um livro!'),
-                          backgroundColor: Colors.red));
 
                       Navigator.pop(context);
 
@@ -403,5 +403,6 @@ class TelaMapaState extends State<TelaMapa> {
   @override
   void initState() {
     super.initState();
+    _getLocalizacaoUsuario();
   }
 }
