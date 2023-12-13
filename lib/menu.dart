@@ -1,5 +1,5 @@
-import 'screens/tela_livros.dart';
-import 'screens/tela_mapa.dart';
+import 'screens/app/tela_livros.dart';
+import 'screens/app/tela_mapa.dart';
 import 'package:flutter/material.dart';
 
 class Menu extends StatefulWidget {
@@ -24,8 +24,9 @@ class MenuState extends State<Menu> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: paginaAtual,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.book), label: "Livros"),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: "Mapa")
+          BottomNavigationBarItem(
+              icon: Icon(Icons.book_outlined), label: "Livros"),
+          BottomNavigationBarItem(icon: Icon(Icons.map_outlined), label: "Mapa")
         ],
         onTap: (pagina) {
           pc?.animateToPage(pagina,

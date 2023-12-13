@@ -1,5 +1,5 @@
-import 'tela_cadastro.dart';
-import 'tela_autenticacao.dart';
+import 'auth/tela_cadastro.dart';
+import 'auth/tela_autenticacao.dart';
 import 'package:flutter/material.dart';
 
 class TelaInicial extends StatefulWidget {

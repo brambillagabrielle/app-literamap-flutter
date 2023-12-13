@@ -1,4 +1,4 @@
-import '../firebase/firebase_functions.dart';
+import '../../firebase/firebase_functions.dart';
 import 'package:flutter/material.dart';
 
 class TelaCadastro extends StatefulWidget {

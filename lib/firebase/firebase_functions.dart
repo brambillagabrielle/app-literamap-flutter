@@ -1,8 +1,7 @@
 import '../menu.dart';
-import '../screens/tela_autenticacao.dart';
+import '../screens/auth/tela_autenticacao.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
 import '../screens/tela_inicial.dart';
 
 createUserWithEmailAndPassword(
@@ -63,6 +62,12 @@ signInWithEmailAndPassword(
     } else if (e.code == 'wrong-password') {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text("Senha informada está incorreta"),
+        backgroundColor: Colors.red,
+      ));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text(
+            "Ocorreu um erro durante a autenticação. Por favor, tente novamente."),
         backgroundColor: Colors.red,
       ));
     }
