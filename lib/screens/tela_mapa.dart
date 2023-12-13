@@ -1,14 +1,17 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding_resolver/geocoding_resolver.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 // ignore: must_be_immutable
 class TelaMapa extends StatefulWidget {
-  String? idLocal;
-  TelaMapa({super.key, this.idLocal});
+  const TelaMapa({super.key});
 
   @override
   State<StatefulWidget> createState() {
@@ -32,7 +35,9 @@ class TelaMapaState extends State<TelaMapa> {
     zoom: 10,
   );
 
-  bool editando = false;
+  final GoogleSignIn googleSignIn = GoogleSignIn();
+  User? _currentUser;
+  FirebaseAuth auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -42,9 +47,16 @@ class TelaMapaState extends State<TelaMapa> {
       ),
       body: GoogleMap(
           initialCameraPosition: _posicaoCamera,
-          onMapCreated: (GoogleMapController controller) {
+          onMapCreated: (GoogleMapController controller) async {
             _controller.complete(controller);
-            _getLivrosRegistrados();
+            User? user = await _getUser(context: context);
+            _currentUser = user;
+
+            _getLocalizacaoUsuario();
+
+            if (_currentUser != null) {
+              _getLivrosRegistrados();
+            }
           },
           markers: _marcadores,
           onLongPress: _adicionarMarcadorLivro),
@@ -119,14 +131,16 @@ class TelaMapaState extends State<TelaMapa> {
                     if (formKey.currentState!.validate()) {
                       String id = "";
 
-                      livro['titulo'] = controladorTitulo.text;
-                      livro['autor'] = controladorAutor.text;
-                      livro['ano'] = controladorAno.text;
-                      livro['latitude'] = latLng.latitude;
-                      livro['longitude'] = latLng.longitude;
-                      _livros
-                          .add(livro)
-                          .then((documentSnapshot) => id = documentSnapshot.id);
+                      if (_currentUser != null) {
+                        livro['titulo'] = controladorTitulo.text;
+                        livro['autor'] = controladorAutor.text;
+                        livro['ano'] = controladorAno.text;
+                        livro['usuario'] = _currentUser?.uid;
+                        livro['latitude'] = latLng.latitude;
+                        livro['longitude'] = latLng.longitude;
+                        _livros.add(livro).then(
+                            (documentSnapshot) => id = documentSnapshot.id);
+                      }
 
                       Marker marcador = Marker(
                           markerId: MarkerId(
@@ -135,16 +149,21 @@ class TelaMapaState extends State<TelaMapa> {
                           infoWindow: InfoWindow(
                               title:
                                   '${controladorTitulo.text} (${controladorAno.text})',
-                              snippet: 'Por: ${controladorAutor.text}}'),
+                              snippet: 'Autor: ${controladorAutor.text}'),
                           onTap: () {
-                            editando = true;
-                            _editarMarcadorLivro(id);
-                            editando = false;
+                            if (_currentUser != null) {
+                              _editarMarcadorLivro(id);
+                            }
                           });
 
                       setState(() {
                         _marcadores.add(marcador);
                       });
+
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text(
+                              'Você precisa estar logado para poder adicionar um livro!'),
+                          backgroundColor: Colors.red));
 
                       Navigator.pop(context);
 
@@ -215,9 +234,13 @@ class TelaMapaState extends State<TelaMapa> {
                     TextFormField(
                         controller: controladorAno,
                         decoration: const InputDecoration(
-                          labelText: 'Ano de publicação',
+                          labelText: 'Ano',
                           icon: Icon(Icons.calendar_today_outlined),
                         ),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                        ],
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Informe o ano';
@@ -246,11 +269,9 @@ class TelaMapaState extends State<TelaMapa> {
                           infoWindow: InfoWindow(
                               title:
                                   '${controladorTitulo.text} (${controladorAno.text})',
-                              snippet: 'Por: ${controladorAutor.text}}'),
+                              snippet: 'Autor: ${controladorAutor.text}'),
                           onTap: () {
-                            editando = true;
                             _editarMarcadorLivro(id);
-                            editando = false;
                           });
 
                       setState(() {
@@ -274,17 +295,17 @@ class TelaMapaState extends State<TelaMapa> {
                 onPressed: () {
                   _livros.doc(id).delete();
 
+                  Navigator.pop(context);
+
                   setState(() {
                     _marcadores.removeWhere((element) =>
                         element.markerId.toString() ==
                         "marcador-${latLng.latitude}-${latLng.longitude}");
                   });
 
-                  Navigator.pop(context);
-
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                       content: Text('O livro/marcador foi excluído!'),
-                      backgroundColor: Colors.red));
+                      backgroundColor: Colors.green));
                 },
               )
             ],
@@ -296,24 +317,24 @@ class TelaMapaState extends State<TelaMapa> {
     _livros.get().then((querySnapshot) {
       for (var docSnapshot in querySnapshot.docs) {
         final data = docSnapshot.data() as Map<String, dynamic>;
-        String titulo = data['titulo'];
-        String autor = data['autor'];
-        String ano = data['ano'];
-        LatLng latLng = LatLng(data['latitude'], data['longitude']);
-        Marker marcador = Marker(
-            markerId:
-                MarkerId("marcador-${latLng.latitude}-${latLng.longitude}"),
-            position: latLng,
-            infoWindow:
-                InfoWindow(title: '$titulo ($ano)', snippet: 'Por: $autor'),
-            onTap: () {
-              editando = true;
-              _editarMarcadorLivro(docSnapshot.id);
-              editando = false;
-            });
-        setState(() {
-          _marcadores.add(marcador);
-        });
+        if (data['usuario'] == _currentUser?.uid) {
+          String titulo = data['titulo'];
+          String autor = data['autor'];
+          String ano = data['ano'];
+          LatLng latLng = LatLng(data['latitude'], data['longitude']);
+          Marker marcador = Marker(
+              markerId:
+                  MarkerId("marcador-${latLng.latitude}-${latLng.longitude}"),
+              position: latLng,
+              infoWindow:
+                  InfoWindow(title: '$titulo ($ano)', snippet: 'Autor: $autor'),
+              onTap: () {
+                _editarMarcadorLivro(docSnapshot.id);
+              });
+          setState(() {
+            _marcadores.add(marcador);
+          });
+        }
       }
     });
   }
@@ -343,34 +364,44 @@ class TelaMapaState extends State<TelaMapa> {
           target: LatLng(position.latitude, position.longitude), zoom: 10);
       _movimentarCamera();
     }
-  } /* 
+  }
 
-  _mostrarLocal(String? idLocal) async {
-    DocumentSnapshot livro = await _livros.doc(idLocal).get();
-    String titulo = livro.get("titulo");
-    String autor = livro.get("autor");
-    String ano = livro.get("ano");
-    LatLng latLng = LatLng(livro.get('latitude'), livro.get('longitude'));
-    setState(() {
-      Marker marcador = Marker(
-          markerId: MarkerId("marcador-${latLng.latitude}-${latLng.longitude}"),
-          position: latLng,
-          infoWindow:
-              InfoWindow(title: '$titulo ($ano)', snippet: 'Por: $autor'),
-          onTap: () {
-            editando = true;
-            _adicionarMarcadorLivro(latLng);
-            editando = false;
-          });
-      _marcadores.add(marcador);
-      _posicaoCamera = CameraPosition(target: latLng, zoom: 10);
-      _movimentarCamera();
-    });
-  } */
+  Future<User?> _getUser({required BuildContext context}) async {
+    User? user;
+    if (_currentUser != null) return _currentUser;
+    if (kIsWeb) {
+      GoogleAuthProvider authProvider = GoogleAuthProvider();
+      try {
+        final UserCredential userCredential =
+            await auth.signInWithPopup(authProvider);
+        user = userCredential.user;
+      } catch (e) {
+        print(e);
+      }
+    } else {
+      final GoogleSignInAccount? googleSignInAccount =
+          await googleSignIn.signIn();
+      if (googleSignInAccount != null) {
+        final GoogleSignInAuthentication googleSignInAuthentication =
+            await googleSignInAccount.authentication;
+
+        final AuthCredential credential = GoogleAuthProvider.credential(
+            accessToken: googleSignInAuthentication.accessToken,
+            idToken: googleSignInAuthentication.idToken);
+        try {
+          final UserCredential userCredential =
+              await auth.signInWithCredential(credential);
+          user = userCredential.user;
+        } catch (e) {
+          print(e);
+        }
+      }
+    }
+    return user;
+  }
 
   @override
   void initState() {
     super.initState();
-    _getLocalizacaoUsuario();
   }
 }

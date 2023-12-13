@@ -1,6 +1,5 @@
-import 'auth/tela_cadastro.dart';
-import 'auth/tela_autenticacao.dart';
 import 'package:flutter/material.dart';
+import 'package:literamap/screens/tela_mapa.dart';
 
 class TelaInicial extends StatefulWidget {
   const TelaInicial({Key? key}) : super(key: key);
@@ -27,23 +26,12 @@ class _TelaInicialState extends State<TelaInicial> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const TelaAutenticacao(),
+                    builder: (context) => TelaMapa(),
                   ),
                 );
               },
-              child: const Text("Entrar"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const TelaCadastro(),
-                  ),
-                );
-              },
-              child: const Text("Cadastrar-se"),
-            ),
+              child: const Text("Entrar com o Google"),
+            )
           ],
         ),
       ),

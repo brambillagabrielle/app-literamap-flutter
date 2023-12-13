@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:literamap/screens/tela_inicial.dart';
 import 'firebase_options.dart';
-import 'menu.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -9,7 +9,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(MaterialApp(
-    home: Menu(),
+    home: TelaInicial(),
     theme: ThemeData(
       colorScheme: const ColorScheme.light(primary: Color(0xFFed5f72)),
       focusColor: const Color(0xFFed5f72),
