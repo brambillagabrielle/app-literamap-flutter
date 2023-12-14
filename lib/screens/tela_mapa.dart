@@ -137,6 +137,12 @@ class TelaMapaState extends State<TelaMapa> {
                         livro['longitude'] = latLng.longitude;
                         _livros.add(livro).then(
                             (documentSnapshot) => id = documentSnapshot.id);
+
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(const SnackBar(
+                          content: Text("Livro adicionado!"),
+                          backgroundColor: Colors.green,
+                        ));
                       } else {
                         ScaffoldMessenger.of(context)
                             .showSnackBar(const SnackBar(
@@ -165,11 +171,6 @@ class TelaMapaState extends State<TelaMapa> {
                       });
 
                       Navigator.pop(context);
-
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text("Livro adicionado!"),
-                        backgroundColor: Colors.green,
-                      ));
                     }
                   })
             ],
